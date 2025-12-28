@@ -46,8 +46,6 @@ def format_header(elapsed_s: float, turn: Optional[int], label: str) -> str:
 
 def format_command(command: str) -> str:
     command = truncate(command, MAX_CMD_LEN)
-    if not command:
-        command = "(empty)"
     return f"`{command}`"
 
 
