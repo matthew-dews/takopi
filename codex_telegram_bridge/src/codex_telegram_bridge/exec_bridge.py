@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # /// script
-# requires-python = ">=3.10"
+# requires-python = ">=3.12"
 # dependencies = ["markdown-it-py", "sulguk", "typer"]
 # ///
 from __future__ import annotations
