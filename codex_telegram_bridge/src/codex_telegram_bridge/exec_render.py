@@ -183,6 +183,7 @@ def render_event_cli(
     state: ExecRenderState,
     *,
     show_reasoning: bool = False,
+    show_output: bool = False,
 ) -> list[str]:
     etype = event.get("type")
     lines: list[str] = []
@@ -232,9 +233,10 @@ def render_event_cli(
                 exit_code = item.get("exit_code")
                 exit_part = f" (exit {exit_code})" if exit_code is not None else ""
                 lines.append(f"{STATUS_DONE} ran: {command}{exit_part}")
-                output = _truncate_output(item.get("aggregated_output", ""))
-                if output:
-                    lines.extend(indent(output, "  ").splitlines())
+                if show_output:
+                    output = _truncate_output(item.get("aggregated_output", ""))
+                    if output:
+                        lines.extend(indent(output, "  ").splitlines())
 
         elif itype == "file_change" and etype == "item.completed":
             line = _format_file_change(item.get("changes", []))
