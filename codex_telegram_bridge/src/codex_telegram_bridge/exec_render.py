@@ -90,6 +90,9 @@ def extract_numeric_id(item_id: Optional[object], fallback: Optional[int] = None
 def attach_id(item_id: Optional[int], line: str) -> str:
     return f"[{item_id if item_id is not None else '?'}] {line}"
 
+def format_reasoning(text: str) -> str:
+    return f"_{one_line(text)}_"
+
 
 def format_item_action_line(etype: str, item: dict[str, Any]) -> str | None:
     match (item["type"], etype):
@@ -113,6 +116,8 @@ def format_item_action_line(etype: str, item: dict[str, Any]) -> str | None:
 
 def format_item_completed_line(item: dict[str, Any]) -> str | None:
     match item["type"]:
+        case "reasoning":
+            return format_reasoning(item["text"])
         case "web_search":
             query = format_query(item["query"])
             return f"{STATUS_DONE} searched: {query}"

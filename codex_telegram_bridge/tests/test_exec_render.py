@@ -28,8 +28,10 @@ def test_render_event_cli_sample_stream() -> None:
     assert out == [
         "thread started",
         "turn started",
+        "[0] _**Searching for README files**_",
         "[1] ▸ running: `bash -lc ls`",
         "[1] ✓ ran: `bash -lc ls` (exit 0)",
+        "[2] _**Checking repository root for README**_",
         "assistant:",
         "  Yep — there’s a `README.md` in the repository root.",
         "turn completed",
@@ -50,4 +52,3 @@ def test_progress_renderer_renders_progress_and_final() -> None:
     assert "running:" not in final
     assert "ran:" not in final
     assert final.endswith("answer")
-
