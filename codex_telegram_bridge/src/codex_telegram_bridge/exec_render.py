@@ -11,6 +11,7 @@ ELLIPSIS = "…"
 STATUS_RUNNING = "▸"
 STATUS_DONE = "✓"
 HEADER_SEP = " · "
+HARD_BREAK = "  \n"
 
 MAX_CMD_LEN = 40
 MAX_REASON_LEN = 80
@@ -94,6 +95,12 @@ def _format_tool_call(server: str, tool: str) -> str:
     return name or "tool"
 
 
+def _with_id(item_id: Optional[str], line: str) -> str:
+    if item_id:
+        return f"[{item_id}] {line}"
+    return f"[?] {line}"
+
+
 def _truncate_output(text: str, max_lines: int = 20, max_chars: int = 4000) -> str:
     if not text:
         return ""
@@ -146,6 +153,10 @@ def _set_current_action(state: ExecRenderState, item_id: Optional[str], line: st
 
 def _complete_action(state: ExecRenderState, item_id: Optional[str], line: str) -> bool:
     changed = False
+    if state.current_reasoning:
+        if not state.recent_actions or state.recent_actions[-1] != state.current_reasoning:
+            state.recent_actions.append(state.current_reasoning)
+            changed = True
     if line:
         state.recent_actions.append(line)
         changed = True
@@ -154,6 +165,8 @@ def _complete_action(state: ExecRenderState, item_id: Optional[str], line: str) 
         state.current_action_id = None
         state.current_reasoning = None
         changed = True
+    if not item_id and state.current_action_id is None:
+        state.current_reasoning = None
     return changed
 
 
@@ -258,47 +271,48 @@ class ExecProgressRenderer:
             if itype == "reasoning":
                 reasoning = _format_reasoning(item.get("text", ""))
                 if reasoning:
+                    reasoning_line = _with_id(item_id, reasoning)
                     if self.state.current_action and not self.state.current_reasoning:
-                        self.state.current_reasoning = reasoning
+                        self.state.current_reasoning = reasoning_line
                         changed = True
                     else:
-                        self.state.pending_reasoning = reasoning
+                        self.state.pending_reasoning = reasoning_line
                 return changed
 
             if itype == "command_execution":
                 command = _format_command(item.get("command", ""))
                 if etype == "item.started":
-                    line = f"{STATUS_RUNNING} running: {command}"
+                    line = _with_id(item_id, f"{STATUS_RUNNING} running: {command}")
                     changed = _set_current_action(self.state, item_id, line) or changed
                 elif etype == "item.completed":
                     exit_code = item.get("exit_code")
                     exit_part = f" (exit {exit_code})" if exit_code is not None else ""
-                    line = f"{STATUS_DONE} ran: {command}{exit_part}"
+                    line = _with_id(item_id, f"{STATUS_DONE} ran: {command}{exit_part}")
                     changed = _complete_action(self.state, item_id, line) or changed
                 return changed
 
             if itype == "mcp_tool_call":
                 name = _format_tool_call(item.get("server", ""), item.get("tool", ""))
                 if etype == "item.started":
-                    line = f"{STATUS_RUNNING} tool: {name}"
+                    line = _with_id(item_id, f"{STATUS_RUNNING} tool: {name}")
                     changed = _set_current_action(self.state, item_id, line) or changed
                 elif etype == "item.completed":
-                    line = f"{STATUS_DONE} tool: {name}"
+                    line = _with_id(item_id, f"{STATUS_DONE} tool: {name}")
                     changed = _complete_action(self.state, item_id, line) or changed
                 return changed
 
             if itype == "web_search" and etype == "item.completed":
                 query = _format_query(item.get("query", ""))
-                line = f"{STATUS_DONE} searched: {query}"
+                line = _with_id(item_id, f"{STATUS_DONE} searched: {query}")
                 return _complete_action(self.state, item_id, line) or changed
 
             if itype == "file_change" and etype == "item.completed":
-                line = f"{STATUS_DONE} {_format_file_change(item.get('changes', []))}"
+                line = _with_id(item_id, f"{STATUS_DONE} {_format_file_change(item.get('changes', []))}")
                 return _complete_action(self.state, item_id, line) or changed
 
             if itype == "error" and etype == "item.completed":
                 warning = _truncate(item.get("message", ""), 120)
-                line = f"{STATUS_DONE} warning: {warning}"
+                line = _with_id(item_id, f"{STATUS_DONE} warning: {warning}")
                 return _complete_action(self.state, item_id, line) or changed
 
         return changed
@@ -350,4 +364,4 @@ class ExecProgressRenderer:
     def _assemble(header: str, lines: list[str]) -> str:
         if not lines:
             return header
-        return header + "\n\n" + "\n".join(lines)
+        return header + "\n\n" + HARD_BREAK.join(lines)
