@@ -15,7 +15,7 @@ import anyio
 
 from .markdown import TELEGRAM_MARKDOWN_LIMIT, prepare_telegram
 from .model import CompletedEvent, ResumeToken, StartedEvent, TakopiEvent
-from .render import ExecProgressRenderer
+from .render import ExecProgressRenderer, render_event_cli
 from .runner import Runner
 from .telegram import BotClient
 
@@ -27,6 +27,22 @@ def _resolve_resume(
     runner: Runner, text: str | None, reply_text: str | None
 ) -> ResumeToken | None:
     return runner.extract_resume(text) or runner.extract_resume(reply_text)
+
+
+def _summarize_error(error: str | None) -> str:
+    if not error:
+        return "error"
+    return error
+
+
+def _log_runner_event(evt: TakopiEvent) -> None:
+    for line in render_event_cli(evt):
+        logger.info("[runner] %s", line)
+    if isinstance(evt, CompletedEvent):
+        if evt.ok:
+            logger.info("[runner] done")
+        else:
+            logger.info("[runner] error: %s", _summarize_error(evt.error))
 
 
 def _is_cancel_command(text: str) -> bool:
@@ -364,6 +380,7 @@ async def handle_message(
                     nonlocal resume_token_value, completed, answer, run_ok, run_error
                     try:
                         async for evt in runner.run(runner_text, resume_token):
+                            _log_runner_event(evt)
                             if isinstance(evt, StartedEvent):
                                 resume_token_value = evt.resume
                                 if (
