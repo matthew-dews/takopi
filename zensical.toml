@@ -8,13 +8,14 @@ repo_name = "banteg/takopi"
 edit_uri = "edit/master/docs/"
 docs_dir = "docs"
 site_dir = "_site"
-extra_css = ["stylesheets/admonitions.css"]
+extra_css = ["stylesheets/admonitions.css", "stylesheets/workflow-preview.css", "stylesheets/hero-chat.css"]
+extra_javascript = ["javascripts/hero-chat.js"]
 
 nav = [
   { "Home" = "index.md" },
   { "Tutorials" = [
     { "Overview" = "tutorials/index.md" },
-    { "Install & onboard" = "tutorials/install-and-onboard.md" },
+    { "Install" = "tutorials/install.md" },
     { "First run" = "tutorials/first-run.md" },
     { "Projects & branches" = "tutorials/projects-and-branches.md" },
     { "Multi-engine" = "tutorials/multi-engine.md" },
@@ -111,6 +112,7 @@ features = [
   "content.code.copy",
   "content.action.edit",
   "content.action.view",
+  "content.tabs.link",
 ]
 
 [project.theme.icon]
@@ -152,6 +154,9 @@ toggle.name = "Switch to system preference"
 emoji_index = "zensical.extensions.emoji.twemoji"
 emoji_generator = "zensical.extensions.emoji.to_svg"
 options.custom_icons = ["docs/overrides/.icons"]
+
+[project.markdown_extensions.pymdownx.tabbed]
+alternate_style = true
 
 [project.markdown_extensions.pymdownx.tasklist]
 custom_checkbox = true
