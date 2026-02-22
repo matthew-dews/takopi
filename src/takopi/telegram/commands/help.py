@@ -19,6 +19,6 @@ async def _handle_help_command(
         include_file=cfg.files.enabled,
         include_topics=cfg.topics.enabled,
     )
-    lines = [f"/{cmd['command']} — {cmd['description']}" for cmd in commands]
+    lines = [f"- /{cmd['command']} — {cmd['description']}" for cmd in commands]
     reply = make_reply(cfg, msg)
     await reply(text="\n".join(lines))
