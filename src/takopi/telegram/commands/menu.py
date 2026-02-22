@@ -71,6 +71,7 @@ def build_bot_commands(
         commands.append({"command": cmd, "description": description})
         seen.add(cmd)
     for cmd, description in [
+        ("help", "list available commands"),
         ("new", "start a new thread"),
         ("clear", "start a new thread"),
         ("ctx", "show or update context"),
