@@ -72,6 +72,7 @@ def build_bot_commands(
         seen.add(cmd)
     for cmd, description in [
         ("new", "start a new thread"),
+        ("clear", "start a new thread"),
         ("ctx", "show or update context"),
         ("agent", "set default engine"),
         ("model", "set model override"),

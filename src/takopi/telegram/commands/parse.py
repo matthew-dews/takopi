@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+_COMMAND_ALIASES: dict[str, str] = {
+    "clear": "new",
+}
+
 
 def is_cancel_command(text: str) -> bool:
     stripped = text.strip()
@@ -27,4 +31,6 @@ def _parse_slash_command(text: str) -> tuple[str | None, str]:
     if len(lines) > 1:
         tail = "\n".join(lines[1:])
         args_text = f"{args_text}\n{tail}" if args_text else tail
-    return command.lower(), args_text
+    command = command.lower()
+    command = _COMMAND_ALIASES.get(command, command)
+    return command, args_text
